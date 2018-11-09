@@ -4,7 +4,7 @@ docker build -t account-mp target
 
 docker run --rm -p 8090:8090 --name account --link user account-mp:latest
 
-Test
+Test (requires User service up and running, see helidon-mp-user)
 
 Create account:
 
