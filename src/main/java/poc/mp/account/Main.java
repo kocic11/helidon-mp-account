@@ -54,6 +54,7 @@ public final class Main {
 
         // Server will automatically pick up configuration from
         // microprofile-config.properties
+        System.setProperty("sun.net.http.allowRestrictedHeaders", "true");
         Server server = Server.create();
         server.start();
         return server;

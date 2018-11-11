@@ -37,12 +37,28 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 
+import org.eclipse.microprofile.config.inject.ConfigProperty;
+
 @Path("/account")
 @RequestScoped
 public class AccountResource {
 
     @Inject
     private AccountRepo accountRepo;
+
+    private String userServiceUrl;
+    private String userHeaderName;
+    private String userHeaderValue;
+
+    @Inject
+    public AccountResource(@ConfigProperty(name = "user.host") String host,
+            @ConfigProperty(name = "user.port") String port, @ConfigProperty(name = "user.path") String path,
+            @ConfigProperty(name = "user.header.name") String name,
+            @ConfigProperty(name = "user.header.value") String value) {
+        userServiceUrl = "http://" + host + ":" + port + path;
+        userHeaderName = name;
+        userHeaderValue = value;
+    }
 
     /**
      * Return list of accounts matching the provided type.
@@ -89,9 +105,9 @@ public class AccountResource {
         if (checkUserId(userId)) {
             String id = accountRepo.add(account);
             return Response.created(UriBuilder.fromResource(this.getClass()).path("id/" + id).build()).build();
-        } else {
-            return Response.noContent().build();
         }
+
+        return Response.noContent().build();
     }
 
     private boolean checkUserId(String userId) {
@@ -100,14 +116,12 @@ public class AccountResource {
         }
 
         Client client = ClientBuilder.newClient();
-        JsonObject jsonObject = client.target(getConnectionString("/user/id/" + userId)).request()
+        String url = userServiceUrl + userId;
+        System.out.println("Before calling User service: " + url);
+        JsonObject jsonObject = client.target(url).request().header(userHeaderName, userHeaderValue)
                 .get(JsonObject.class);
-        if (jsonObject != null) {
-            if (userId.equals(getStringFromJson("id", jsonObject))) {
-                return true;
-            } else {
-                return false;
-            }
+        if (jsonObject != null && userId.equals(getStringFromJson("id", jsonObject))) {
+            return true;
         }
 
         return false;
@@ -122,14 +136,5 @@ public class AccountResource {
             }
         }
         return returnedString;
-    }
-
-    private String getConnectionString(String path) {
-        String userHost = System.getenv("USER_PORT");
-        if (userHost != null) {
-            return "http://user:8080" + path;
-        }
-
-        return "http://localhost:8080" + path;
     }
 }
