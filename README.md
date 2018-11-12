@@ -42,7 +42,7 @@ docker run -d --name kong \
 ```
 curl -i http://localhost:8001/
 ```
-5.	Add your Service using the Admin API
+5.	Add the service using the Admin API
 ```
 curl -i -X POST \
   --url http://localhost:8001/services/ \
@@ -54,7 +54,7 @@ curl -i -X POST \
   --data 'name=account-service' \
   --data 'url=http://account:8090'
 ```
-6.	Add a Route for the services
+6.	Add the routes for the services
 ```
 curl -i -X POST \
   --url http://localhost:8001/services/user-service/routes \
@@ -72,7 +72,7 @@ docker build -t account-mp target
 docker run --rm -p 8090:8090 --name user --network kong-net user-mp:latest
 docker run --rm -p 8090:8090 --name account --network kong-net account-mp:latest
 ```
-8.	Forward your requests through Kong
+8.	Forward the requests through Kong
 ```
 curl -i -X GET \
   --url http://localhost:8000/user/getall \
