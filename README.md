@@ -1,20 +1,27 @@
 To configure Kong API Gateway and run the services, follow the steps below.
 1.	Create a Docker network
+```
 docker network create kong-net
-Start your database
+```
+2.  Start a database
+```
 docker run -d --name kong-database \
                --network=kong-net \
                -p 5432:5432 \
                -e "POSTGRES_USER=kong" \
                -e "POSTGRES_DB=kong" \
                postgres:9.6
-2.	Prepare your database
+```           
+2.	Prepare the database
+```
 docker run --rm \
      --network=kong-net \
      -e "KONG_DATABASE=postgres" \
      -e "KONG_PG_HOST=kong-database" \
      kong:latest kong migrations up
+```    
 3.	Start Kong
+```
 docker run -d --name kong \
      --network=kong-net \
      -e "KONG_DATABASE=postgres" \
@@ -30,9 +37,13 @@ docker run -d --name kong \
      -p 8001:8001 \
      -p 8444:8444 \
      kong:latest
+```     
 4.	Test Kong
+```
 curl -i http://localhost:8001/
+```
 5.	Add your Service using the Admin API
+```
 curl -i -X POST \
   --url http://localhost:8001/services/ \
   --data 'name=user-service' \
@@ -42,7 +53,9 @@ curl -i -X POST \
   --url http://localhost:8001/services/ \
   --data 'name=account-service' \
   --data 'url=http://account:8090'
+```
 6.	Add a Route for the services
+```
 curl -i -X POST \
   --url http://localhost:8001/services/user-service/routes \
   --data 'hosts[]=user'
@@ -50,13 +63,17 @@ curl -i -X POST \
 curl -i -X POST \
   --url http://localhost:8001/services/account-service/routes \
   --data 'hosts[]=account'
+```
 7.	Build and start the services
+```
 mvn package
 docker build -t user-mp target
 docker build -t account-mp target
 docker run --rm -p 8090:8090 --name user --network kong-net user-mp:latest
 docker run --rm -p 8090:8090 --name account --network kong-net account-mp:latest
+```
 8.	Forward your requests through Kong
+```
 curl -i -X GET \
   --url http://localhost:8000/user/getall \
   --header 'Host: user'
@@ -64,3 +81,4 @@ curl -i -X GET \
 curl -i -X GET \
   --url http://localhost:8000/account/id/0001 \
   --header 'Host: account'
+```
