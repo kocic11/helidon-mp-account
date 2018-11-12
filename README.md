@@ -42,7 +42,7 @@ docker run -d --name kong \
 ```
 curl -i http://localhost:8001/
 ```
-5.	Add the service using the Admin API
+5.	Add the services using the Admin API
 ```
 curl -i -X POST \
   --url http://localhost:8001/services/ \
